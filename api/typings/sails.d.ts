@@ -198,16 +198,19 @@ declare namespace Sails {
     members(childIds: number[] | string[]): this;
   }
 
-  type DatabaseRecord = {
-    id?: number | string;
+  type BaseAttributes = {
     [key: string]: any;
   };
 
-  type DatabaseRecordToCreate = {
+  type DatabaseRecord<ModelAttrs extends BaseAttrs> = {
     id?: number | string;
-    [key: string]: any;
-  };
-  interface Model {
+  } & ModelAttrs;
+
+  type DatabaseRecordToCreate<ModelAttrs extends BaseAttrs> = {
+    id?: number | string;
+  } & ModelAttrs;
+
+  interface Model<ModelAttrs extends BaseAttrs> {
     /**
      * Add one or more existing child records to the specified collection (e.g. the comments of BlogPost #4).
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/add-to-collection
@@ -225,13 +228,15 @@ declare namespace Sails {
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/archive
      * @param criteria
      */
-    archive(criteria: Criteria): ModelFetchPromise<DatabaseRecord | DatabaseRecord[]>;
+    archive(
+      criteria: Criteria
+    ): ModelFetchPromise<DatabaseRecord<ModelAttrs> | DatabaseRecord<ModelAttrs>[]>;
 
     /**
      * Archive ("soft-delete") the record that matches the specified criteria, saving it (if it exists) as a new record in the built-in Archive model, then destroying the original.
      * @param criteria
      */
-    archiveOne(criteria: Criteria): Promise<DatabaseRecord>;
+    archiveOne(criteria: Criteria): Promise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Get the aggregate mean of the specified attribute across all matching records.
@@ -254,7 +259,7 @@ declare namespace Sails {
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/create
      * @param initialValues
      */
-    create(initialValues: {}): ModelFetchOnePromise<DatabaseRecord>;
+    create(initialValues: {}): ModelFetchOnePromise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Create a set of records in the database.
@@ -262,7 +267,9 @@ declare namespace Sails {
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/create-each
      * @param initialValues
      */
-    createEach(initialValues: {}[]): ModelFetchPromise<DatabaseRecord[] | [] | undefined>;
+    createEach(
+      initialValues: {}[]
+    ): ModelFetchPromise<DatabaseRecord<ModelAttrs>[] | [] | undefined>;
 
     /**
      * Destroy records in your database that match the given criteria.
@@ -270,14 +277,14 @@ declare namespace Sails {
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/destroy
      * @param criteria
      */
-    destroy(criteria: Criteria): ModelFetchPromise<DatabaseRecord[] | [] | undefined>;
+    destroy(criteria: Criteria): ModelFetchPromise<DatabaseRecord<ModelAttrs>[] | [] | undefined>;
 
     /**
      * Destroy the record in your database that matches the given criteria, if it exists.
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/destroy-one
      * @param criteria
      */
-    destroyOne(criteria: Criteria): Promise<DatabaseRecord>;
+    destroyOne(criteria: Criteria): Promise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Find records in your database that match the given criteria.
@@ -287,10 +294,10 @@ declare namespace Sails {
     find(
       criteria?: Criteria | CriteriaWithQueryOptions,
       populate?: any
-    ): QueryPromise<DatabaseRecord[] | undefined>;
+    ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
     find(
       criteria?: Criteria | CriteriaWithQueryOptions
-    ): QueryPromise<DatabaseRecord[] | undefined>;
+    ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
 
     /**
      * Attempt to find a particular record in your database that matches the given criteria.
@@ -298,7 +305,7 @@ declare namespace Sails {
      * @example var record = await Something.findOne(criteria);
      * @param criteria
      */
-    findOne(criteria: Criteria): QueryPromise<DatabaseRecord>;
+    findOne(criteria: Criteria): QueryPromise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Find the record matching the specified criteria. If no such record exists, create one using the provided initial values.
@@ -316,7 +323,10 @@ declare namespace Sails {
      * @param criteria
      * @param initialValues
      */
-    findOrCreate(criteria: Criteria, initialValues: {}): QueryPromise<DatabaseRecord[] | undefined>;
+    findOrCreate(
+      criteria: Criteria,
+      initialValues: {}
+    ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
 
     /**
      * Access the datastore for a particular model.
