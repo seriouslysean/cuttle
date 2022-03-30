@@ -7,32 +7,42 @@
  */
 
 declare namespace Sails {
+  type BaseModelAttrs = {
+    [key: string]: any;
+  };
+
   enum SortOption {
     ASC,
     DESC,
   }
   type SortOptions = keyof typeof SortOption;
 
-  interface Criteria {
-    or?: Criteria[];
-    [key: string]: CriteriaModifierItem | string | number | boolean | Date | Criteria[] | undefined;
-  }
+  type Criteria<ModelAttrs extends BaseModelAttrs> = {
+    or?: Criteria<ModelAttrs>[];
+  } & {
+    [ModelAttrName in keyof ModelAttrs]?:
+      | ModelAttrs[ModelAttrName]
+      | CriteriaModifierItem<ModelAttrs[ModelAttrName]>
+      | Criteria<Pick<ModelAttrs, ModelAttrName>>[]
+      | undefined;
+  };
 
-  interface CriteriaWithQueryOptions {
-    where: Criteria;
+  interface CriteriaWithQueryOptions<ModelAttrs extends BaseModelAttrs> {
+    where: Criteria<ModelAttrs>;
     limit?: number;
     skip?: number;
     sort?: string | { [key: string]: SortOptions }[];
   }
 
-  interface CriteriaModifierItem {
-    '<'?: any;
-    '<='?: any;
-    '>'?: any;
-    '>='?: any;
-    '!='?: any;
-    nin?: any[];
-    in?: any[];
+  interface CriteriaModifierItem<ModelAttrType> {
+    '<'?: ModelAttrType;
+    '<='?: ModelAttrType;
+    '>'?: ModelAttrType;
+    '>='?: ModelAttrType;
+    '!='?: ModelAttrType;
+    nin?: ModelAttrType[];
+    in?: ModelAttrType[];
+    // TODO: Why is this string?
     contains?: string;
   }
 
@@ -198,19 +208,15 @@ declare namespace Sails {
     members(childIds: number[] | string[]): this;
   }
 
-  type BaseAttributes = {
-    [key: string]: any;
-  };
-
-  type DatabaseRecord<ModelAttrs extends BaseAttrs> = {
+  type DatabaseRecord<ModelAttrs extends BaseModelAttrs> = {
     id?: number | string;
   } & ModelAttrs;
 
-  type DatabaseRecordToCreate<ModelAttrs extends BaseAttrs> = {
+  type DatabaseRecordToCreate<ModelAttrs extends BaseModelAttrs> = {
     id?: number | string;
   } & ModelAttrs;
 
-  interface Model<ModelAttrs extends BaseAttrs> {
+  interface Model<ModelAttrs extends BaseModelAttrs> {
     /**
      * Add one or more existing child records to the specified collection (e.g. the comments of BlogPost #4).
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/add-to-collection
@@ -236,7 +242,7 @@ declare namespace Sails {
      * Archive ("soft-delete") the record that matches the specified criteria, saving it (if it exists) as a new record in the built-in Archive model, then destroying the original.
      * @param criteria
      */
-    archiveOne(criteria: Criteria): Promise<DatabaseRecord<ModelAttrs>>;
+    archiveOne(criteria: Criteria<ModelAttrs>): Promise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Get the aggregate mean of the specified attribute across all matching records.
@@ -244,7 +250,7 @@ declare namespace Sails {
      * @param numericAttrName
      * @param criteria
      */
-    avg(numericAttrName: string, criteria: Criteria): number;
+    avg(numericAttrName: string, criteria: Criteria<ModelAttrs>): number;
 
     /**
      * Get the total number of records matching the specified criteria.
@@ -292,11 +298,11 @@ declare namespace Sails {
      * @param criteria
      */
     find(
-      criteria?: Criteria | CriteriaWithQueryOptions,
+      criteria?: Criteria<ModelAttrs> | CriteriaWithQueryOptions<ModelAttrs>,
       populate?: any
     ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
     find(
-      criteria?: Criteria | CriteriaWithQueryOptions
+      criteria?: Criteria<ModelAttrs> | CriteriaWithQueryOptions<ModelAttrs>
     ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
 
     /**
@@ -305,7 +311,7 @@ declare namespace Sails {
      * @example var record = await Something.findOne(criteria);
      * @param criteria
      */
-    findOne(criteria: Criteria): QueryPromise<DatabaseRecord<ModelAttrs>>;
+    findOne(criteria: Criteria<ModelAttrs>): QueryPromise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Find the record matching the specified criteria. If no such record exists, create one using the provided initial values.
@@ -324,8 +330,8 @@ declare namespace Sails {
      * @param initialValues
      */
     findOrCreate(
-      criteria: Criteria,
-      initialValues: {}
+      criteria: Criteria<ModelAttrs> | CriteriaWithQueryOptions<ModelAttrs>,
+      initialValues: Partial<ModelAttrs>
     ): QueryPromise<DatabaseRecord<ModelAttrs>[] | undefined>;
 
     /**
@@ -367,21 +373,21 @@ declare namespace Sails {
      * @param numericAttrName
      * @param criteria
      */
-    sum(numericAttrName: string, criteria?: Criteria): number;
+    sum(numericAttrName: string, criteria?: Criteria<ModelAttrs>): number;
 
     /**
      * Update all records matching criteria.
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/update
      * @param criteria
      */
-    update(criteria: Criteria): ModelSetPromise<DatabaseRecord[]>;
+    update(criteria: Criteria<ModelAttrs>): ModelSetPromise<DatabaseRecord<ModelAttrs>[]>;
 
     /**
      * Update the record that matches the given criteria, if such a record exists.
      * @url https://sailsjs.com/documentation/reference/waterline-orm/models/update-one
      * @param criteria
      */
-    updateOne(criteria: Criteria): ModelSetPromise<DatabaseRecord>;
+    updateOne(criteria: Criteria<ModelAttrs>): ModelSetPromise<DatabaseRecord<ModelAttrs>>;
 
     /**
      * Verify that a value would be valid for a given attribute, then return it, loosely coerced.
@@ -462,3 +468,21 @@ declare namespace Sails {
  * DECLARE THE sails VARIABLE
  */
 declare var sails: Sails.GlobalSailsApplication;
+
+type Game = unknown;
+type Card = unknown;
+type Hand = Card[];
+
+type UserModelAttrs = {
+  username: string;
+  encryptedPassword: string;
+  game?: Game;
+  pNum?: 0 | 1;
+  hand?: Hand;
+  points?: Card[];
+  faceCards?: Card[];
+};
+
+declare var User: Sails.Model<UserModelAttrs>;
+
+const userCriteria: Sails.Criteria<UserModalAttrs> = { foo: string };
