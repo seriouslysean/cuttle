@@ -16,18 +16,16 @@ module.exports = {
                 return reject(err);
               } else if (!usr) {
                 return reject({ message: 'Could not find user: ' + options.userId });
-              } else {
-                return resolve(usr);
               }
+              return resolve(usr);
             });
           // end if options has userId
-        } else {
-          return reject({ message: 'No id given when finding user' });
         }
-        //end if(options)
-      } else {
         return reject({ message: 'No id given when finding user' });
+
+        //end if(options)
       }
+      return reject({ message: 'No id given when finding user' });
     });
   },
 
@@ -40,9 +38,8 @@ module.exports = {
       options.user.save(function(err) {
         if (err) {
           return reject(err);
-        } else {
-          return resolve(options.user);
         }
+        return resolve(options.user);
       });
     });
   },

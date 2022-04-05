@@ -1,63 +1,3 @@
-type ModelTypeName<ModelType> = ModelType extends string
-  ? 'string'
-  : ModelType extends number
-  ? 'number'
-  : ModelType extends boolean
-  ? 'boolean'
-  : never;
-
-type ModelDefinition<ModelAttrs extends Sails.BaseModelAttrs> = {
-  attributes: {
-    [ModelAttrName in keyof ModelAttrs]:
-      | {
-          type?: ModelTypeName<ModelAttrs[ModelAttrName]>;
-          required?: boolean;
-          allowNull?: true;
-          defaultsTo?: ModelAttrs[ModelAttrName];
-          isIn?: Array<ModelAttrs[ModelAttrName]>;
-          model?: never;
-          collection?: never;
-          via?: never;
-        }
-      | {
-          type?: never;
-          required?: never;
-          allowNull?: never;
-          defaultsTo?: never;
-          isIn?: never;
-          model?: string;
-          collection?: never;
-          via?: never;
-        }
-      | {
-          type?: never;
-          required?: never;
-          allowNull?: never;
-          defaultsTo?: never;
-          isIn?: never;
-          model?: never;
-          collection?: string;
-          via?: string;
-        };
-  };
-};
-
-type Game = unknown;
-type Card = unknown;
-type Hand = Card[];
-
-type UserModelAttrs = {
-  username: string;
-  encryptedPassword: string;
-  game?: Game;
-  pNum?: 0 | 1;
-  hand?: Hand;
-  points?: Card[];
-  faceCards?: Card[];
-  frozenId?: Card;
-  rank?: number;
-};
-
 /**
  * User.js
  *
@@ -65,7 +5,7 @@ type UserModelAttrs = {
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-const UserModel: ModelDefinition<UserModelAttrs> = {
+const userModelDefinition: Sails.ModelDefinition<UserModelAttrs> = {
   attributes: {
     username: {
       type: 'string',
@@ -111,9 +51,7 @@ const UserModel: ModelDefinition<UserModelAttrs> = {
       type: 'number',
       defaultsTo: 1000,
     },
-  }, // end attributes
-}; // end exports
+  },
+};
 
-export default UserModel;
-
-declare var User: Sails.Model<UserModelAttrs>;
+export default userModelDefinition;

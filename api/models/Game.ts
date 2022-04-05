@@ -5,7 +5,7 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-module.exports = {
+const gameModelDefinition: Sails.ModelDefinition<GameModelAttrs> = {
   attributes: {
     name: {
       type: 'string',
@@ -107,5 +107,7 @@ module.exports = {
       type: 'number',
       defaultsTo: -1,
     },
-  }, // end attributes
-}; // end exports
+  },
+};
+
+export default gameModelDefinition;

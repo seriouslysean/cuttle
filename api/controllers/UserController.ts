@@ -8,7 +8,10 @@
 //////////////////
 // DEPENDENCIES //
 //////////////////
+import Express from 'express';
+import * as core from 'express-serve-static-core';
 
+// TODO: Need to type these.
 const userAPI = sails.hooks['customuserhook'];
 const passwordAPI = sails.hooks['custompasswordhook'];
 
@@ -16,11 +19,43 @@ export function homepage(req, res) {
   return res.view('homepage', { loggedIn: req.session.loggedIn, game: req.session.game });
 }
 
-type SignupRequest = {
-  body: { username: string; password: string };
-};
+type SailsResHandlerParams = string | Record<string, any>;
 
-export async function signup(req: SignupRequest, res) {
+interface SailsResponse<ResBody = any, Locals extends Record<string, any> = Record<string, any>>
+  extends Express.Response<ResBody, Locals> {
+  badRequest: (s: SailsResHandlerParams) => void;
+  forbidden: (s: SailsResHandlerParams) => void;
+}
+// type SailsResponse<Params extends Record<string, any> = Record<string, any>> = {
+// } & Params;
+
+declare namespace Signup {
+  type RequestParams = {
+    username: string;
+    password: string;
+  };
+  // TODO
+  type ResponseParams = SailsResponse & { success: true };
+}
+
+interface SailsRequestHandler<
+  P = core.ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = core.Query,
+  Locals extends Record<string, any> = Record<string, any>
+> extends Express.RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {
+  (
+    req: Express.Request<P, ResBody, ReqBody, ReqQuery, Locals>,
+    res: SailsResponse<ResBody, Locals>,
+    next: Express.NextFunction
+  ): Promise<void>;
+}
+
+export const signup: SailsRequestHandler<{}, Signup.ResponseParams, Signup.RequestParams> = async (
+  req,
+  res
+) => {
   // Request was missing data
   if (!req.body.password && !req.body.username) {
     return res.badRequest('You did not submit a username or password');
@@ -43,7 +78,7 @@ export async function signup(req: SignupRequest, res) {
   } catch (err) {
     return res.badRequest(err);
   }
-}
+};
 export async function login(req, res) {
   const { username } = req.body;
   if (!username) {

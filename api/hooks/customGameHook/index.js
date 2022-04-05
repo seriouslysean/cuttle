@@ -2,6 +2,8 @@ module.exports = function gameHook(sails) {
   //////////////
   // Game API //
   //////////////
+
+
   return {
     createGame: function(gameName) {
       return new Promise(function(resolve, reject) {

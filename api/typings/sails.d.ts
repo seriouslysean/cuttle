@@ -328,7 +328,7 @@ declare namespace Sails {
      *  Something.findOrCreate(criteria, initialValues)
      *    .exec(function(err, newOrExistingRecord, wasCreated) {
      *    // code
-     *    }}
+     *    }
      *
      * @param criteria
      * @param initialValues
@@ -404,6 +404,50 @@ declare namespace Sails {
     // enable other private methods.
     [key: string]: any;
   }
+
+  type ModelTypeName<ModelType> = ModelType extends string
+    ? 'string'
+    : ModelType extends number
+    ? 'number'
+    : ModelType extends boolean
+    ? 'boolean'
+    : never;
+
+  type ModelDefinition<ModelAttrs extends Sails.BaseModelAttrs> = {
+    attributes: {
+      [ModelAttrName in keyof ModelAttrs]:
+        | {
+            type?: ModelTypeName<ModelAttrs[ModelAttrName]>;
+            required?: boolean;
+            allowNull?: true;
+            defaultsTo?: ModelAttrs[ModelAttrName];
+            isIn?: Array<ModelAttrs[ModelAttrName]>;
+            model?: never;
+            collection?: never;
+            via?: never;
+          }
+        | {
+            type?: never;
+            required?: never;
+            allowNull?: never;
+            defaultsTo?: never;
+            isIn?: never;
+            model?: string;
+            collection?: never;
+            via?: never;
+          }
+        | {
+            type?: never;
+            required?: never;
+            allowNull?: never;
+            defaultsTo?: never;
+            isIn?: never;
+            model?: never;
+            collection?: string;
+            via?: string;
+          };
+    };
+  };
 
   interface DataStore {
     /**
