@@ -16,14 +16,18 @@ export function homepage(req, res) {
   return res.view('homepage', { loggedIn: req.session.loggedIn, game: req.session.game });
 }
 
-export async function signup(req, res) {
+type SignupRequest = {
+  body: { username: string; password: string };
+};
+
+export async function signup(req: SignupRequest, res) {
   // Request was missing data
   if (!req.body.password && !req.body.username) {
     return res.badRequest('You did not submit a username or password');
   }
   try {
     const { username, password } = req.body;
-    const users = await User.find({ username: username });
+    const users = await User.find({ username });
     if (users.length > 0) {
       return res.badRequest({
         message: 'That username is already registered to another user; try logging in!',

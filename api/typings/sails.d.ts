@@ -34,17 +34,21 @@ declare namespace Sails {
     sort?: string | { [key: string]: SortOptions }[];
   }
 
-  interface CriteriaModifierItem<ModelAttrType> {
-    '<'?: ModelAttrType;
-    '<='?: ModelAttrType;
-    '>'?: ModelAttrType;
-    '>='?: ModelAttrType;
-    '!='?: ModelAttrType;
+  type CriteriaModifierItem<ModelAttrType> = (ModelAttrType extends number | Date
+    ? {
+        '<'?: ModelAttrType;
+        '<='?: ModelAttrType;
+        '>'?: ModelAttrType;
+        '>='?: ModelAttrType;
+        '!='?: ModelAttrType;
+      }
+    : {}) & {
     nin?: ModelAttrType[];
     in?: ModelAttrType[];
-    // TODO: Why is this string?
+    // TODO: It's not quite clear why this was initially implemented as string,
+    // so it's been left. We should confirm.
     contains?: string;
-  }
+  };
 
   interface QueryPromise<T> extends Promise<QueryPromise<T> | any> {
     /**
@@ -468,21 +472,3 @@ declare namespace Sails {
  * DECLARE THE sails VARIABLE
  */
 declare var sails: Sails.GlobalSailsApplication;
-
-type Game = unknown;
-type Card = unknown;
-type Hand = Card[];
-
-type UserModelAttrs = {
-  username: string;
-  encryptedPassword: string;
-  game?: Game;
-  pNum?: 0 | 1;
-  hand?: Hand;
-  points?: Card[];
-  faceCards?: Card[];
-};
-
-declare var User: Sails.Model<UserModelAttrs>;
-
-const userCriteria: Sails.Criteria<UserModalAttrs> = { foo: string };
